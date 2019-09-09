@@ -33,11 +33,9 @@ namespace ValidationLibrary.Csv
                               HowToFix = result.HowToFix
                           };
 
-            using (var writer = new StreamWriter(_destinationFile.FullName, true))
-            using (var csv = new CsvWriter(writer))
-            {
-                csv.WriteRecords(flatten.ToList());
-            }
+            using var writer = new StreamWriter(_destinationFile.FullName, true);
+            using var csv = new CsvWriter(writer);
+            csv.WriteRecords(flatten.ToList());
         }
 
         private class ReportLine

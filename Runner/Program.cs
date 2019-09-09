@@ -36,66 +36,63 @@ namespace Runner
                 .AddJsonFile("appsettings.Development.json", optional: true)
                 .Build();
 
-            using (var di = BuildDependencyInjection(config))
+            using var di = BuildDependencyInjection(config);
+            var logger = di.GetService<ILogger<Program>>();
+            var githubConfig = di.GetService<GitHubConfiguration>();
+            var ghClient = di.GetService<IGitHubClient>();
+            var client = di.GetService<ValidationClient>();
+            client.Init().Wait();
+
+            void scanner(IEnumerable<string> repositories, Options options)
             {
-                var logger = di.GetService<ILogger<Program>>();
-                var githubConfig = di.GetService<GitHubConfiguration>();
-                var ghClient = di.GetService<IGitHubClient>();
-                var repositoryValidator = di.GetService<RepositoryValidator>();
-                var client = di.GetService<ValidationClient>();
-                client.Init().Wait();
-
-                void scanner(IEnumerable<string> repositories, Options options)
+                var start = DateTime.UtcNow;
+                var results = repositories.Select(repo =>
                 {
-                    var start = DateTime.UtcNow;
-                    var results = repositories.Select(repo =>
-                    {
-                        Thread.Sleep(TimeSpan.FromSeconds(3));
-                        return client.ValidateRepository(githubConfig.Organization, repo).Result;
-                    }).ToArray();
+                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    return client.ValidateRepository(githubConfig.Organization, repo).Result;
+                }).ToArray();
 
-                    ReportToConsole(logger, results);
+                ReportToConsole(logger, results);
 
-                    if (options.AutoFix)
-                    {
-                        PerformAutofixes(ghClient, results);
-                    }
-                    if (!string.IsNullOrWhiteSpace(options.CsvFile))
-                    {
-                        ReportToCsv(di.GetService<ILogger<CsvReporter>>(), options.CsvFile, results);
-                    }
-                    if (options.ReportToGithub)
-                    {
-                        ReportToGitHub(ghClient, GitHubReporterConfig, di.GetService<ILogger<GitHubReporter>>(), results).Wait();
-                    }
-                    if (options.ReportToSlack)
-                    {
-                        var slackSection = config.GetSection("Slack");
-                        if (slackSection.Exists())
-                        {
-                            var slackConfig = new SlackConfiguration();
-                            slackSection.Bind(slackConfig);
-                            ReportToSlack(slackConfig, logger, results).Wait();
-                        }
-                    }
-                    logger.LogInformation("Duration {duration}", (DateTime.UtcNow - start).TotalSeconds);
+                if (options.AutoFix)
+                {
+                    PerformAutofixes(ghClient, results);
                 }
-
-                Parser.Default.ParseArguments<ScanSelectedOptions, ScanAllOptions>(args)
-                .WithParsed<ScanSelectedOptions>(options =>
+                if (!string.IsNullOrWhiteSpace(options.CsvFile))
                 {
-                    scanner(options.Repositories, options);
-                })
-                .WithParsed<ScanAllOptions>(options =>
+                    ReportToCsv(di.GetService<ILogger<CsvReporter>>(), options.CsvFile, results);
+                }
+                if (options.ReportToGithub)
                 {
-                    var allNonArchivedRepositories = ghClient
-                        .Repository
-                        .GetAllForOrg(githubConfig.Organization)
-                        .Result
-                        .Where(repository => !repository.Archived);
-                    scanner(allNonArchivedRepositories.Select(r => r.Name).ToArray(), options);
-                });
+                    ReportToGitHub(ghClient, GitHubReporterConfig, di.GetService<ILogger<GitHubReporter>>(), results).Wait();
+                }
+                if (options.ReportToSlack)
+                {
+                    var slackSection = config.GetSection("Slack");
+                    if (slackSection.Exists())
+                    {
+                        var slackConfig = new SlackConfiguration();
+                        slackSection.Bind(slackConfig);
+                        ReportToSlack(slackConfig, logger, results).Wait();
+                    }
+                }
+                logger.LogInformation("Duration {duration}", (DateTime.UtcNow - start).TotalSeconds);
             }
+
+            Parser.Default.ParseArguments<ScanSelectedOptions, ScanAllOptions>(args)
+            .WithParsed<ScanSelectedOptions>(options =>
+            {
+                scanner(options.Repositories, options);
+            })
+            .WithParsed<ScanAllOptions>(options =>
+            {
+                var allNonArchivedRepositories = ghClient
+                    .Repository
+                    .GetAllForOrg(githubConfig.Organization)
+                    .Result
+                    .Where(repository => !repository.Archived);
+                scanner(allNonArchivedRepositories.Select(r => r.Name).ToArray(), options);
+            });
         }
 
         private static void PerformAutofixes(IGitHubClient ghClient, ValidationReport[] results)
@@ -137,11 +134,9 @@ namespace Runner
         private static async Task ReportToSlack(SlackConfiguration config, ILogger logger, params ValidationReport[] reports)
         {
             var slackClient = new SlackClient(config);
-            using (var response = await slackClient.SendMessageAsync(reports))
-            {
-                var isValid = response.IsSuccessStatusCode ? "valid" : "invalid";
-                logger.LogInformation("Received {isValid} response.", isValid);
-            }
+            using var response = await slackClient.SendMessageAsync(reports);
+            var isValid = response.IsSuccessStatusCode ? "valid" : "invalid";
+            logger.LogInformation("Received {isValid} response.", isValid);
         }
 
         private static GitHubClient CreateClient(GitHubConfiguration configuration)
