@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Linq;
 using ValidationLibrary.Rules;
+using System.Reflection;
 
 namespace ValidationLibrary.AzureFunctions.Tests
 {
@@ -55,7 +56,8 @@ namespace ValidationLibrary.AzureFunctions.Tests
         public void Configure_CheckNormalRuleConfiguration()
         {
             // Get all rule classes.
-            var expectedRules = typeof(HasLicenseRule).Assembly.GetExportedTypes().Where(t => t.GetInterface(nameof(IValidationRule)) != null && !t.IsAbstract);
+            var assembly = Assembly.Load("ValidationLibrary.Rules");
+            var expectedRules = assembly.GetExportedTypes().Where(t => t.GetInterface(nameof(IValidationRule)) != null && !t.IsAbstract);
             var expectedRuleNames = expectedRules.Select(r =>
             {
                 var args = r.GetConstructors()[0].GetParameters().Select(p => (object)null).ToArray();
@@ -81,15 +83,15 @@ namespace ValidationLibrary.AzureFunctions.Tests
             Environment.SetEnvironmentVariable("Rules:HasDescriptionRule", "enable"); // Decoy.
 
             // Get all rule classes.
-            var ruleType = typeof(HasLicenseRule);
-            var expectedRules = ruleType.Assembly.GetExportedTypes().Where(t => t.GetInterface(nameof(IValidationRule)) != null && !t.IsAbstract);
+            var assembly = Assembly.Load("ValidationLibrary.Rules");
+            var allRules = assembly.GetExportedTypes().Where(t => t.GetInterface(nameof(IValidationRule)) != null && !t.IsAbstract);
 
             IHost host = new HostBuilder().ConfigureWebJobs(new Startup().Configure).Build();
             var validator = (IRepositoryValidator)host.Services.GetService(typeof(IRepositoryValidator));
             var actualRules = validator.Rules;
 
-            Assert.AreEqual(expectedRules.Count() - 1, actualRules.Length);
-            Assert.IsTrue(expectedRules.Any(r => r.Equals(ruleType)));
+            Assert.AreEqual(allRules.Count() - 1, actualRules.Length);
+            Assert.IsTrue(allRules.Any(r => r.Equals(typeof(HasLicenseRule))));
             Assert.IsFalse(actualRules.Any(r => r.RuleName.Equals("Missing License")));
             Assert.IsTrue(actualRules.Any(r => r.RuleName.Equals("Missing description")));
 
