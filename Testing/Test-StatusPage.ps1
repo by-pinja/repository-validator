@@ -1,7 +1,6 @@
 <#
     .SYNOPSIS
-    This will call Azure Function App multiple times with invalid requests
-    which should cause an alarm
+    This will call status page
 
     .PARAMETER SettinsFile
     Settings file that contains environment settings.
@@ -18,13 +17,8 @@ $settingsJson = Get-Content -Raw -Path $SettingsFile | ConvertFrom-Json
  
 $address = ./Deployment/Get-FunctionUri.ps1 `
   -ResourceGroup $settingsJson.ResourceGroupName `
-  -FunctionName 'RepositoryValidatorTrigger'
+  -FunctionName 'Monitor'
 
-For ($i = 0; $i -le 10; $i++) {
-  Try {
-    Invoke-RestMethod -Method POST -Uri $address
-  }
-  Catch {
-    # Do nothing
-  }
-}
+Write-Host 'Send status check request'
+Write-Host $address
+Invoke-RestMethod -Method GET -Uri $address -ContentType 'application/json;charset=UTF-8'

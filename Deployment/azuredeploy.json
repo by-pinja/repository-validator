@@ -89,6 +89,9 @@
                 "displayName": "Function app",
                 "environment": "[parameters('environment')]"
             },
+            "identity": {
+                "type": "SystemAssigned"
+            },
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "siteConfig": {
@@ -114,7 +117,7 @@
                         },
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                            "value": "6.5.0"
+                            "value": ""
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",

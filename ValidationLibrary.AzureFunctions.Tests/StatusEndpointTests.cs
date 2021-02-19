@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Management.Fluent;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
@@ -37,7 +38,7 @@ namespace ValidationLibrary.AzureFunctions.Tests
             var rules = new[] { rule, rule2 };
             _validator = Substitute.For<IRepositoryValidator>();
             _validator.Rules.Returns(rules);
-            _statusEndpoint = new StatusEndpoint(Substitute.For<ILogger<StatusEndpoint>>(), _validator);
+            _statusEndpoint = new StatusEndpoint(Substitute.For<ILogger<StatusEndpoint>>(), _validator, Substitute.For<IAzure>());
         }
 
         [Test]
