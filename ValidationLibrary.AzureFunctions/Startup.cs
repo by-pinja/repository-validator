@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Reflection;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -15,9 +14,6 @@ using ValidationLibrary.Utils;
 using System.Linq;
 using ValidationLibrary.Rules;
 using ValidationLibrary.GitHub;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 
 [assembly: WebJobsStartup(typeof(Startup))]
 namespace ValidationLibrary.AzureFunctions
@@ -65,7 +61,6 @@ namespace ValidationLibrary.AzureFunctions
                     ValidateConfig(githubConfig);
                     return CreateClient(githubConfig);
                 })
-                .AddTransient(provider => BuildConnection())
                 .AddTransient<GitUtils>()
                 .AddSingleton(CreateGitHubReportConfig())
                 .AddTransient<IGitHubReporter, GitHubReporter>()
@@ -114,18 +109,6 @@ namespace ValidationLibrary.AzureFunctions
             {
                 throw new ArgumentNullException(nameof(gitHubConfiguration.Token), "Token was missing.");
             }
-        }
-
-        private static IAzure BuildConnection()
-        {
-            var msiInformation = new MSILoginInformation(MSIResourceType.AppService);
-
-            var credentials = SdkContext.AzureCredentialsFactory.FromMSI(msiInformation, AzureEnvironment.AzureGlobalCloud);
-            return Microsoft.Azure.Management.Fluent.Azure
-                    .Configure()
-                    .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
-                    .Authenticate(credentials)
-                    .WithDefaultSubscription();
         }
     }
 }

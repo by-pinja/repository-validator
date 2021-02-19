@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Management.Fluent;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
@@ -10,9 +9,9 @@ using NUnit.Framework;
 namespace ValidationLibrary.AzureFunctions.Tests
 {
     [TestFixture]
-    public class StatusEndpointTests
+    public class ConfigurationEndpointTests
     {
-        private StatusEndpoint _statusEndpoint;
+        private ConfigurationEndpoint _statusEndpoint;
         private IRepositoryValidator _validator;
 
         [SetUp]
@@ -38,16 +37,16 @@ namespace ValidationLibrary.AzureFunctions.Tests
             var rules = new[] { rule, rule2 };
             _validator = Substitute.For<IRepositoryValidator>();
             _validator.Rules.Returns(rules);
-            _statusEndpoint = new StatusEndpoint(Substitute.For<ILogger<StatusEndpoint>>(), _validator, Substitute.For<IAzure>());
+            _statusEndpoint = new ConfigurationEndpoint(Substitute.For<ILogger<ConfigurationEndpoint>>(), _validator);
         }
 
         [Test]
-        public void Run_NormalStatusEndpointCheck()
+        public void GetConfigurations_ReturnsRuleConfigurations()
         {
             var expectedStatuses = _validator.Rules.Select(r => r.GetConfiguration());
             var request = new HttpRequestMessage();
 
-            var result = _statusEndpoint.Run(request);
+            var result = _statusEndpoint.GetConfigurations(request);
 
             var casted = result as JsonResult;
             Assert.NotNull(casted, "The returned result was not a JsonResult.");

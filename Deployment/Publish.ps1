@@ -26,20 +26,28 @@ param(
 $ErrorActionPreference = "Stop"
 	
 $publishFolder = "publish"
-$azureFunctionProject = 'ValidationLibrary.AzureFunctions';
+$validatorAzureFunctionProject = 'ValidationLibrary.AzureFunctions';
+$monitorAzureFunctionsProject = 'StatusFunction';
 
 # delete any previous publish
 if (Test-path $publishFolder) { Remove-Item -Recurse -Force $publishFolder }
 
-dotnet publish -c Release -o $publishFolder $azureFunctionProject --version-suffix $VersionSuffx
+dotnet publish -c Release -o "$publishFolder/$validatorAzureFunctionProject" $validatorAzureFunctionProject --version-suffix $VersionSuffx
+dotnet publish -c Release -o "$publishFolder/$monitorAzureFunctionsProject" $monitorAzureFunctionsProject --version-suffix $VersionSuffx
 
-$destination = "publish.zip"
-$fullSourcePath = (Resolve-Path "$publishFolder").Path
+$validatorOutputZip = "validator-app.zip"
+$fullSourcePath = (Resolve-Path "$publishFolder/$validatorAzureFunctionProject").Path
 $fullTargetPath = (Resolve-Path ".\").Path
-$fullZipTarget = Join-Path -Path $fullTargetPath -ChildPath $destination
+$validatorFullZipTarget = Join-Path -Path $fullTargetPath -ChildPath $validatorOutputZip
+Compress-Archive -DestinationPath $validatorFullZipTarget -Path "$fullSourcePath/*" -Force
 
-Compress-Archive -DestinationPath $fullZipTarget -Path "$fullSourcePath/*" -Force
+$monitorOutputZip = "monitor-app.zip"
+$fullSourcePath = (Resolve-Path "$publishFolder/$monitorAzureFunctionsProject").Path
+$fullTargetPath = (Resolve-Path ".\").Path
+$monitorFullZipTarget = Join-Path -Path $fullTargetPath -ChildPath $monitorOutputZip
+Compress-Archive -DestinationPath $monitorFullZipTarget -Path "$fullSourcePath/*" -Force
 
 Write-Host "Deploying new version."
-Publish-AzWebApp -ResourceGroupName $ResourceGroup -Name $WebAppName -ArchivePath $fullZipTarget -Force
+Publish-AzWebApp -ResourceGroupName $ResourceGroup -Name $WebAppName -ArchivePath $validatorFullZipTarget -Force
+Publish-AzWebApp -ResourceGroupName $ResourceGroup -Name "$WebAppName-monitor" -ArchivePath $monitorFullZipTarget -Force
 Write-Host 'Version deployed'

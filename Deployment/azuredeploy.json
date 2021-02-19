@@ -39,16 +39,20 @@
         }
     },
     "variables": {
-        "functionAppName": "[parameters('appName')]",
-        "hostingPlanName": "[parameters('appName')]",
+        "validatorFunctionAppName": "[parameters('appName')]",
+        "validatorHostingPlanName": "[parameters('appName')]",
         "applicationInsightsName": "[parameters('appName')]",
-        "storageAccountName": "[concat(replace(parameters('appName'), '-', ''), 'func')]",
-        "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+        "validatorStorageAccountName": "[concat('app', uniqueString(subscription().subscriptionId))]",
+        "validatorStorageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('validatorStorageAccountName'))]",
+        "monitorFunctionAppName": "[concat(parameters('appName'), '-monitor')]",
+        "monitorHostingPlanName": "[variables('monitorFunctionAppName')]",
+        "monitorStorageAccountName": "[concat('monitor', uniqueString(subscription().subscriptionId))]",
+        "monitorStorageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('monitorStorageAccountName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[variables('storageAccountName')]",
+            "name": "[variables('validatorStorageAccountName')]",
             "apiVersion": "2018-07-01",
             "location": "[parameters('location')]",
             "kind": "Storage",
@@ -56,22 +60,22 @@
                 "name": "Standard_LRS"
             },
             "tags": {
-                "displayName": "Storage for function app",
+                "displayName": "Storage for validator function app",
                 "environment": "[parameters('environment')]"
             }
         },
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2015-04-01",
-            "name": "[variables('hostingPlanName')]",
+            "name": "[variables('validatorHostingPlanName')]",
             "location": "[parameters('location')]",
             "properties": {
-                "name": "[variables('hostingPlanName')]",
+                "name": "[variables('validatorHostingPlanName')]",
                 "computeMode": "Dynamic",
                 "sku": "Dynamic"
             },
             "tags": {
-                "displayName": "Server for function app",
+                "displayName": "Server for validator function app",
                 "environment": "[parameters('environment')]"
             }
         },
@@ -79,21 +83,21 @@
             "apiVersion": "2018-02-01",
             "type": "Microsoft.Web/sites",
             "kind": "functionapp",
-            "name": "[variables('functionAppName')]",
+            "name": "[variables('validatorFunctionAppName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('validatorHostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('validatorStorageAccountName'))]"
             ],
             "tags": {
-                "displayName": "Function app",
+                "displayName": "Validator Function app",
                 "environment": "[parameters('environment')]"
             },
             "identity": {
                 "type": "SystemAssigned"
             },
             "properties": {
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('validatorHostingPlanName'))]",
                 "siteConfig": {
                     "defaultDocuments": [],
                     "phpVersion": "",
@@ -101,15 +105,15 @@
                     "appSettings": [
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('validatorStorageAccountName'), ';AccountKey=', listKeys(variables('validatorStorageAccountid'),'2015-05-01-preview').key1)]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('validatorStorageAccountName'), ';AccountKey=', listKeys(variables('validatorStorageAccountid'),'2015-05-01-preview').key1)]"
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(variables('functionAppName'))]"
+                            "value": "[toLower(variables('validatorFunctionAppName'))]"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -134,6 +138,87 @@
                         {
                             "name": "Rules:HasCodeownersRule",
                             "value": "disable"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('monitorStorageAccountName')]",
+            "apiVersion": "2018-07-01",
+            "location": "[parameters('location')]",
+            "kind": "Storage",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "tags": {
+                "displayName": "Storage for monitor function app",
+                "environment": "[parameters('environment')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2015-04-01",
+            "name": "[variables('monitorHostingPlanName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "name": "[variables('monitorHostingPlanName')]",
+                "computeMode": "Dynamic",
+                "sku": "Dynamic"
+            },
+            "tags": {
+                "displayName": "Server for monitor function app",
+                "environment": "[parameters('environment')]"
+            }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp",
+            "name": "[variables('monitorFunctionAppName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('monitorHostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('monitorStorageAccountName'))]"
+            ],
+            "tags": {
+                "displayName": "Monitor Function app",
+                "environment": "[parameters('environment')]"
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('monitorHostingPlanName'))]",
+                "siteConfig": {
+                    "defaultDocuments": [],
+                    "phpVersion": "",
+                    "use32BitWorkerProcess": false,
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('monitorStorageAccountName'), ';AccountKey=', listKeys(variables('monitorStorageAccountid'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('monitorStorageAccountName'), ';AccountKey=', listKeys(variables('monitorStorageAccountid'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('monitorFunctionAppName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": ""
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('applicationInsightsName')), '2015-05-01').InstrumentationKey]"
                         }
                     ]
                 }
