@@ -7,10 +7,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ValidationLibrary.AzureFunctions;
+using StatusFunction;
 
 [assembly: WebJobsStartup(typeof(Startup))]
-namespace ValidationLibrary.AzureFunctions
+namespace StatusFunction
 {
     internal class CustomTelemetryInitializer : ITelemetryInitializer
     {
@@ -42,9 +42,12 @@ namespace ValidationLibrary.AzureFunctions
                 .AddEnvironmentVariables()
                 .Build();
 
+            var statusConfig = config.GetSection("StatusMonitoringConfiguration").Get<StatusMonitoringConfiguration>();
+
             builder
                 .Services
                 .AddLogging()
+                .AddSingleton(statusConfig)
                 .AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
         }
     }

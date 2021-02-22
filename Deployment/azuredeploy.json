@@ -219,6 +219,14 @@
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                             "value": "[reference(resourceId('microsoft.insights/components/', variables('applicationInsightsName')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "StatusMonitoringConfiguration:ResourceGroup",
+                            "value": "[resourceGroup().name]"
+                        },
+                        {
+                            "name": "StatusMonitoringConfiguration:SubscriptionId",
+                            "value": "[subscription().subscriptionId]"
                         }
                     ]
                 }

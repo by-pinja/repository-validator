@@ -21,5 +21,4 @@ $address = ./Deployment/Get-FunctionUri.ps1 `
     -FunctionName 'GetAlertsAndRules'
 
 Write-Host 'Send status check request'
-Write-Host $address
 Invoke-RestMethod -Method GET -Uri $address -ContentType 'application/json;charset=UTF-8'
