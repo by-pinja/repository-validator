@@ -43,11 +43,15 @@ namespace StatusFunction
                 .Build();
 
             var statusConfig = config.GetSection("StatusMonitoringConfiguration").Get<StatusMonitoringConfiguration>();
+            var tableStorageSettings = config.GetSection("TableStorage").Get<TableStorageSettings>();
 
             builder
                 .Services
                 .AddLogging()
                 .AddSingleton(statusConfig)
+                .AddSingleton(tableStorageSettings)
+                .AddTransient<StatusCache>()
+                .AddTransient<AlertApiWrapper>()
                 .AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
         }
     }

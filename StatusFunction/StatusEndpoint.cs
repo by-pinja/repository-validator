@@ -14,11 +14,15 @@ namespace StatusFunction
     {
         private readonly ILogger<StatusEndpoint> _logger;
         private readonly StatusMonitoringConfiguration _config;
+        private readonly AlertApiWrapper _apiWrapper;
+        private readonly StatusCache _statusCache;
 
-        public StatusEndpoint(ILogger<StatusEndpoint> logger, StatusMonitoringConfiguration config)
+        public StatusEndpoint(ILogger<StatusEndpoint> logger, StatusMonitoringConfiguration config, AlertApiWrapper apiWrapper, StatusCache statusCache)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _config = config ?? throw new ArgumentNullException(nameof(config));
+            _apiWrapper = apiWrapper ?? throw new ArgumentNullException(nameof(apiWrapper));
+            _statusCache = statusCache;
         }
 
         [FunctionName("GetAlertsAndRules")]
@@ -30,32 +34,18 @@ namespace StatusFunction
             }
 
             _logger.LogDebug("Fetching metric alert rules for {resourceGroup}", _config.ResourceGroup);
-            var azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var accessToken = await azureServiceTokenProvider.GetAccessTokenAsync("https://management.azure.com/");
+            var status = await _apiWrapper.GetStatus(_config.SubscriptionId, _config.ResourceGroup);
 
-            /*
-            NOTE: These rest calls should probably be refactored away when there is a proper library available which supports retriewing alerts and alert rules.
-            Currently (2021-02-22) monitoring fluent API seemed to be at priview stage and didn't contain the actual alerts, only rules
-            */
-
-            var client = new RestClient("https://management.azure.com");
-            client.AddDefaultHeader("Authorization", $"Bearer {accessToken}");
-
-            var ruleRequest = new RestRequest($"subscriptions/{_config.SubscriptionId}/resourceGroups/{_config.ResourceGroup}/providers/Microsoft.Insights/metricAlerts", DataFormat.Json);
-            ruleRequest.AddQueryParameter("api-version", "2018-03-01");
-            var ruleResponse = client.Get(ruleRequest);
-
-            _logger.LogDebug("Fetching alerts for {resourceGroup}", _config.ResourceGroup);
-            var alertRequest = new RestRequest($"subscriptions/{_config.SubscriptionId}/providers/Microsoft.AlertsManagement/alerts", DataFormat.Json);
-            alertRequest.AddQueryParameter("api-version", "2019-03-01");
-            alertRequest.AddQueryParameter("targetResourceGroup", _config.ResourceGroup);
-            var alertResponse = client.Get(alertRequest);
-
-            return new JsonResult(new
+            var statusEntity = new StatusEntity("1")
             {
-                Rules = ruleResponse.Content,
-                Response = alertResponse.Content
-            });
+                Generated = DateTime.UtcNow,
+                Version = "1",
+                AlertRules = status.Rules,
+                Alerts = status.Alerts
+            };
+            await _statusCache.InsertOrMerge(statusEntity);
+
+            return new JsonResult(status);
         }
     }
 }

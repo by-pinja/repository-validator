@@ -227,7 +227,15 @@
                         {
                             "name": "StatusMonitoringConfiguration:SubscriptionId",
                             "value": "[subscription().subscriptionId]"
-                        }
+                        },
+                        {
+                            "name": "TableStorage:ConnectionString",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('monitorStorageAccountName'), ';AccountKey=', listKeys(variables('monitorStorageAccountid'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "TableStorage:CacheTable",
+                            "value": "statuscache"
+                        },
                     ]
                 }
             }
