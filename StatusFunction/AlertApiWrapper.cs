@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Logging;
 using RestSharp;
+using StatusFunction.Dto;
 
 namespace StatusFunction
 {
@@ -21,7 +23,7 @@ namespace StatusFunction
             _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
         }
 
-        public async Task<dynamic> GetStatus(string subscriptionId, string resourecGroup)
+        public async Task<StatusWrapper> GetStatus(string subscriptionId, string resourecGroup)
         {
             /*
             NOTE: These rest calls should probably be refactored away when there is a proper library available which supports retriewing alerts and alert rules.
@@ -37,29 +39,26 @@ namespace StatusFunction
             var ruleRequest =
                 new RestRequest($"subscriptions/{subscriptionId}/resourceGroups/{resourecGroup}/providers/Microsoft.Insights/metricAlerts", DataFormat.Json)
                 .AddQueryParameter("api-version", "2018-03-01");
-            var ruleResponse = client.Get<MetricAlertResponse>(ruleRequest);
+            var ruleResponse = client.Get<MetricAlertResourceCollection>(ruleRequest);
+            _logger.LogTrace("Response status for alert rules {status}", ruleResponse.ResponseStatus, ruleResponse.Content);
 
             _logger.LogDebug("Fetching alerts for {resourceGroup}", resourecGroup);
             var alertRequest =
                 new RestRequest($"subscriptions/{subscriptionId}/providers/Microsoft.AlertsManagement/alerts", DataFormat.Json)
                 .AddQueryParameter("api-version", "2019-03-01")
                 .AddQueryParameter("targetResourceGroup", resourecGroup);
-            var alertResponse = client.Get(alertRequest);
-            return new
+            var alertResponse = client.Get<AlertList>(alertRequest);
+            return new StatusWrapper
             {
-                Rules = ruleResponse.Data,
-                Alerts = alertResponse
+                AlertRules = ruleResponse.Data,
+                Alerts = alertResponse.Data
             };
         }
     }
 
-    public class MetricAlertResponse
+    public class StatusWrapper
     {
-        public dynamic[] Value { get; set; }
-    }
-
-    public class AlertResponse
-    {
-        public dynamic[] Value { get; set; }
+        public MetricAlertResourceCollection AlertRules { get; set; }
+        public AlertList Alerts { get; set; }
     }
 }
