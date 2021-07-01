@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:    
+  functions:
+    container_name: functions
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:80'
+    depends_on:
+      - "storage"
+    environment:
+      - AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;TableEndpoint=http://host.docker.internal:10002/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10001/devstoreaccount1;
+      - WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;TableEndpoint=http://host.docker.internal:10002/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10001/devstoreaccount1;
+      - FUNCTIONS_EXTENSION_VERSION=~3
+      - WEBSITES_ENABLE_APP_SERVICE_STORAGE=false
+      - AzureWebJobsSecretStorageType=files
+      - GitHub__Token=${GITHUBTOKEN}
+      - GitHub__Organization=${GITHUBORGANIZATION}
+      - WEBSITE_HOSTNAME=localhost:8080
+  
+  storage:
+    container_name: storage
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - '10000:10000'
+      - '10001:10001'
+      - '10002:10002'
+    logging:
+      driver: none
