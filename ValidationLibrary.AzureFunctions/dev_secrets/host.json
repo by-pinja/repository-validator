@@ -1,0 +1,14 @@
+{
+  "masterKey": {
+    "name": "master",
+    "value": "mock-secret-for-local-testing",
+    "encrypted": false
+  },
+  "functionKeys": [
+    {
+      "name": "default",
+      "value": "mock-secret-for-local-testing",
+      "encrypted": false
+    }
+  ]
+}
