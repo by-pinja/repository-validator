@@ -40,7 +40,8 @@ repository and report to GitHub issues and application insights
 Azure Function configurations are read from Web site config.
 See `Deployment/azuredeploy.json` and `Deployment`-section for configuration.
 
-For local development and testing of Azure functions, see [function local development documentation](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-local)
+For local development and testing of Azure functions, use script `Start-Local.ps1`.
+This script requires docker.
 
 ## Deployment
 

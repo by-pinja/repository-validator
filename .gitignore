@@ -339,3 +339,4 @@ Deployment/azuredeploy.ptcs.parameters.json
 developer-settings.json
 wiki/
 coveragereport
+.env

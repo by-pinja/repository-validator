@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -10,10 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Octokit;
 using ValidationLibrary.AzureFunctions;
-using ValidationLibrary.Utils;
-using System.Linq;
-using ValidationLibrary.Rules;
 using ValidationLibrary.GitHub;
+using ValidationLibrary.Rules;
+using ValidationLibrary.Utils;
 
 [assembly: WebJobsStartup(typeof(Startup))]
 namespace ValidationLibrary.AzureFunctions
@@ -100,12 +100,17 @@ namespace ValidationLibrary.AzureFunctions
 
         private static void ValidateConfig(GitHubConfiguration gitHubConfiguration)
         {
-            if (gitHubConfiguration.Organization == null)
+            if (gitHubConfiguration is null)
+            {
+                throw new ArgumentNullException(nameof(gitHubConfiguration), "gitHubConfiguration was missing.");
+            }
+
+            if (gitHubConfiguration.Organization is null)
             {
                 throw new ArgumentNullException(nameof(gitHubConfiguration.Organization), "Organization was missing.");
             }
 
-            if (gitHubConfiguration.Token == null)
+            if (gitHubConfiguration.Token is null)
             {
                 throw new ArgumentNullException(nameof(gitHubConfiguration.Token), "Token was missing.");
             }
