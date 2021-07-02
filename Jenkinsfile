@@ -7,7 +7,7 @@ def isTest(branchName) { return branchName == "test" || branchName == "feature/b
 podTemplate(label: pod.label,
   containers: pod.templates + [
     containerTemplate(name: 'dotnet', image: 'ptcos/multi-netcore-sdk:0.0.2', ttyEnabled: true, command: '/bin/sh -c', args: 'cat'),
-    containerTemplate(name: 'powershell', image: 'mcr.microsoft.com/azure-powershell:6.1.0-alpine-3.10', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
+    containerTemplate(name: 'powershell', image: 'eu.gcr.io/ptcs-docker-registry/azure-powershell-bicep:latest-main', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
   ]
 ) {
 
