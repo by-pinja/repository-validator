@@ -1,0 +1,160 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.63.48766",
+      "templateHash": "3505208291210179194"
+    }
+  },
+  "parameters": {
+    "appName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the function app that you wish to create."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "gitHubToken": {
+      "type": "secureString",
+      "metadata": {
+        "description": "GitHub token that is used to access repositories"
+      }
+    },
+    "gitHubOrganization": {
+      "type": "string",
+      "metadata": {
+        "description": "GitHub organization that is to be validated"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Environment type (Development, Production)"
+      },
+      "allowedValues": [
+        "Development",
+        "Production"
+      ]
+    }
+  },
+  "functions": [],
+  "variables": {
+    "functionAppName_var": "[parameters('appName')]",
+    "hostingPlanName_var": "[parameters('appName')]",
+    "applicationInsightsName_var": "[parameters('appName')]",
+    "storageAccountName_var": "[format('{0}func', replace(parameters('appName'), '-', ''))]",
+    "storageAccountid": "[format('{0}/providers/Microsoft.Storage/storageAccounts/{1}', resourceGroup().id, variables('storageAccountName_var'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "name": "[variables('storageAccountName_var')]",
+      "location": "[parameters('location')]",
+      "kind": "Storage",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "tags": {
+        "displayName": "Storage for function app",
+        "environment": "[parameters('environment')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2021-01-01",
+      "name": "[variables('hostingPlanName_var')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      },
+      "tags": {
+        "displayName": "Server for function app",
+        "environment": "[parameters('environment')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('functionAppName_var')]",
+      "kind": "functionapp",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "Function app",
+        "environment": "[parameters('environment')]"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName_var'))]",
+        "siteConfig": {
+          "defaultDocuments": [],
+          "phpVersion": "",
+          "use32BitWorkerProcess": false,
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageAccountName_var'), listKeys(variables('storageAccountid'), '2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageAccountName_var'), listKeys(variables('storageAccountid'), '2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(variables('functionAppName_var'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~3"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName_var')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "GitHub:Token",
+              "value": "[parameters('gitHubToken')]"
+            },
+            {
+              "name": "GitHub:Organization",
+              "value": "[parameters('gitHubOrganization')]"
+            },
+            {
+              "name": "Rules:HasCodeownersRule",
+              "value": "disable"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName_var'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName_var'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02-preview",
+      "name": "[variables('applicationInsightsName_var')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "tags": {
+        "[format('hidden-link:{0}/providers/Microsoft.Web/sites/{1}', resourceGroup().id, variables('applicationInsightsName_var'))]": "Resource",
+        "displayName": "Application insights",
+        "environment": "[parameters('environment')]"
+      },
+      "properties": {
+        "Request_Source": "rest",
+        "Application_Type": "web"
+      }
+    }
+  ]
+}
