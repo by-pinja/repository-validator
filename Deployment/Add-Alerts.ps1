@@ -84,5 +84,4 @@ else {
     }
 }
 
-
 Write-Host 'Alerts created'

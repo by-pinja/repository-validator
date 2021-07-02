@@ -2,12 +2,12 @@ library 'jenkins-ptcs-library@3.1.0'
 
 def isDependabot(branchName) { return branchName.toString().startsWith("dependabot/nuget") }
 def isMaster(branchName) { return branchName == "master" }
-def isTest(branchName) { return branchName == "test" }
+def isTest(branchName) { return branchName == "test" || branchName == "feature/bicep" }
 
 podTemplate(label: pod.label,
   containers: pod.templates + [
     containerTemplate(name: 'dotnet', image: 'ptcos/multi-netcore-sdk:0.0.2', ttyEnabled: true, command: '/bin/sh -c', args: 'cat'),
-    containerTemplate(name: 'powershell', image: 'azuresdk/azure-powershell-core:master', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
+    containerTemplate(name: 'powershell', image: 'eu.gcr.io/ptcs-docker-registry/azure-powershell-bicep:latest-main', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
   ]
 ) {
 
@@ -47,6 +47,12 @@ podTemplate(label: pod.label,
                 stage('Package') {
                     sh """
                         pwsh -command "Compress-Archive -DestinationPath $zipName -Path $functionsProject/$publishFolder/*"
+                    """
+                }
+                stage('Bicep') {
+                    // This step should be removed when our azure-ci-toolbox has support for bicep
+                    sh """
+                        bicep build "Deployment/azuredeploy.bicep"
                     """
                 }
 
@@ -106,7 +112,7 @@ podTemplate(label: pod.label,
                         ]){
                             stage('Create production environment') {
                                 sh """
-                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.json -ResourceGroupName $resourceGroup -appName $appName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment Development"
+                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.bicep -ResourceGroupName $resourceGroup -appName $appName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment Development"
                                 """
                             }
                         }
