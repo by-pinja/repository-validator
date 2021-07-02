@@ -30,12 +30,14 @@ Write-Host "Creating resource group $($settingsJson.ResourceGroupName) to locati
 New-AzResourceGroup -Name $settingsJson.ResourceGroupName -Location $settingsJson.Location -Tag $tagsHashtable -Force
 
 Write-Host 'Creating environment...'
+
+$token = (ConvertTo-SecureString -String $settingsJson.GitHubToken -AsPlainText -Force) 
 New-AzResourceGroupDeployment `
     -Name 'test-deployment' `
-    -TemplateFile 'Deployment/azuredeploy.json' `
+    -TemplateFile 'Deployment/azuredeploy.bicep' `
     -ResourceGroupName $settingsJson.ResourceGroupName `
     -appName $settingsJson.ResourceGroupName `
-    -gitHubToken (ConvertTo-SecureString -String $settingsJson.GitHubToken -AsPlainText -Force) `
+    -gitHubToken $token `
     -gitHubOrganization $settingsJson.GitHubOrganization `
     -environment "Development"
 

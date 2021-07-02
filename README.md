@@ -38,7 +38,7 @@ Azure functions received (GitHub WebHook for pushes) and scans selected
 repository and report to GitHub issues and application insights
 
 Azure Function configurations are read from Web site config.
-See `Deployment/azuredeploy.json` and `Deployment`-section for configuration.
+See `Deployment/azuredeploy.bicep` and `Deployment`-section for configuration.
 
 For local development and testing of Azure functions, use script `Start-Local.ps1`.
 This script requires docker.
