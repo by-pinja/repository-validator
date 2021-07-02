@@ -49,6 +49,12 @@ podTemplate(label: pod.label,
                         pwsh -command "Compress-Archive -DestinationPath $zipName -Path $functionsProject/$publishFolder/*"
                     """
                 }
+                stage('Bicep') {
+                    // This step should be removed when our azure-ci-toolbox has support for bicep
+                    sh """
+                        bicep build "Deployment/azuredeploy.bicep"
+                    """
+                }
 
                 if (isTest(branch) || isDependabot(branch)){
                     toAzureTestEnv {
@@ -66,7 +72,6 @@ podTemplate(label: pod.label,
                         ]) {
                             stage('Create test environment'){
                                 sh """
-                                    bicep build "Deployment/azuredeploy.bicep"
                                     pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.json -ResourceGroupName $ciRg -appName $ciAppName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment $environment"
                                 """
                             }
