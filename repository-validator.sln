@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValidationLibrary.GitHub", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValidationLibrary.GitHub.Tests", "ValidationLibrary.GitHub.Tests\ValidationLibrary.GitHub.Tests.csproj", "{A2AB3E6B-2C91-4279-B8CE-8AD498C9895B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValidationLibrary.Csv", "ValidationLibrary.Csv\ValidationLibrary.Csv.csproj", "{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValidationLibrary.Tests", "ValidationLibrary.Tests\ValidationLibrary.Tests.csproj", "{E576388E-6C59-4003-8872-D083A59FC620}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValidationLibrary.AzureFunctions.Tests", "ValidationLibrary.AzureFunctions.Tests\ValidationLibrary.AzureFunctions.Tests.csproj", "{7126846B-F00E-48AF-BD75-8F420D914F1B}"
@@ -118,18 +116,6 @@ Global
 		{A2AB3E6B-2C91-4279-B8CE-8AD498C9895B}.Release|x64.Build.0 = Release|Any CPU
 		{A2AB3E6B-2C91-4279-B8CE-8AD498C9895B}.Release|x86.ActiveCfg = Release|Any CPU
 		{A2AB3E6B-2C91-4279-B8CE-8AD498C9895B}.Release|x86.Build.0 = Release|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Debug|x64.Build.0 = Debug|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Debug|x86.Build.0 = Debug|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Release|x64.ActiveCfg = Release|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Release|x64.Build.0 = Release|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Release|x86.ActiveCfg = Release|Any CPU
-		{DF7DE4E5-F42B-42CE-9341-F21BDFC3F79A}.Release|x86.Build.0 = Release|Any CPU
 		{E576388E-6C59-4003-8872-D083A59FC620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E576388E-6C59-4003-8872-D083A59FC620}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E576388E-6C59-4003-8872-D083A59FC620}.Debug|x64.ActiveCfg = Debug|Any CPU

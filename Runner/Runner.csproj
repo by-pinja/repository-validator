@@ -29,7 +29,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ValidationLibrary.Slack\ValidationLibrary.Slack.csproj" />
     <ProjectReference Include="..\ValidationLibrary.GitHub\ValidationLibrary.GitHub.csproj" />
-    <ProjectReference Include="..\ValidationLibrary.Csv\ValidationLibrary.Csv.csproj" />
     <ProjectReference Include="..\ValidationLibrary.MarkdownGenerator\ValidationLibrary.MarkdownGenerator.csproj" />
     <ProjectReference Include="..\ValidationLibrary.Rules\ValidationLibrary.Rules.csproj" />
   </ItemGroup>
