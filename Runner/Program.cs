@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Octokit;
 using ValidationLibrary;
-using ValidationLibrary.Csv;
 using ValidationLibrary.GitHub;
 using ValidationLibrary.Rules;
 using ValidationLibrary.Slack;
@@ -60,10 +59,6 @@ namespace Runner
                 if (options.AutoFix)
                 {
                     await PerformAutofixes(ghClient, results);
-                }
-                if (!string.IsNullOrWhiteSpace(options.CsvFile))
-                {
-                    ReportToCsv(di.GetService<ILogger<CsvReporter>>(), options.CsvFile, results);
                 }
                 if (options.ReportToGithub)
                 {
@@ -134,13 +129,6 @@ namespace Runner
         {
             var reporter = new GitHubReporter(logger, client, config);
             await reporter.Report(reports);
-        }
-
-        private static void ReportToCsv(ILogger<CsvReporter> logger, string fileName, IEnumerable<ValidationReport> reports)
-        {
-            var file = new FileInfo(fileName);
-            var reporter = new CsvReporter(logger, file);
-            reporter.Report(reports);
         }
 
         private static async Task ReportToSlack(SlackConfiguration config, ILogger logger, IEnumerable<ValidationReport> reports)
