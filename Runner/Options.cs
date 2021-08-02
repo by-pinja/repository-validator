@@ -13,18 +13,14 @@ namespace Runner
         [Option('a', "AutoFix", HelpText = "If enabled, fixing pull request is automatically created.")]
         public bool AutoFix { get; }
 
-        [Option("CsvFile", HelpText = "If set, results are written to this CSV file. Old file is overridden")]
-        public string CsvFile { get; }
-
         [Option('i', "IgnoreRepositoryRules", HelpText = "If enabled, repository-validator.json is ignored in checking.")]
         public bool IgnoreRepositoryRules { get; }
 
-        public Options(bool reportToSlack, bool reportToGithub, bool autoFix, string csvFile, bool ignoreRepositoryRules)
+        public Options(bool reportToSlack, bool reportToGithub, bool autoFix, bool ignoreRepositoryRules)
         {
             ReportToSlack = reportToSlack;
             ReportToGithub = reportToGithub;
             AutoFix = autoFix;
-            CsvFile = csvFile;
             IgnoreRepositoryRules = ignoreRepositoryRules;
         }
     }
