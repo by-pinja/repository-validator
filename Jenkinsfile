@@ -113,7 +113,6 @@ podTemplate(label: pod.label,
                         stage('Publish to production environment') {
                             sh """
                                 pwsh -command "Publish-AzWebApp -ResourceGroupName $resourceGroup -Name $appName -ArchivePath $zipName -Force"
-                                pwsh -command "&./Deployment/Configure-Alarms.ps1 -MonitoredWebAppResourceGroup $resourceGroup -MonitoredWebAppName $appName -AlertHandlingResourceGroup 'protacon-slack-alarm-service' -AlertSlackChannel 'hjni-testi'"
                             """
                         }
                         stage('Warmup and validate'){
