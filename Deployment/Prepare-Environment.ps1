@@ -30,7 +30,7 @@ Write-Host "Creating resource group $($settingsJson.ResourceGroupName) to locati
 New-AzResourceGroup -Name $settingsJson.ResourceGroupName -Location $settingsJson.Location -Tag $tagsHashtable -Force
 
 Write-Host 'Creating environment...'
-New-AzResourceGroupDeployment `
+$output = New-AzResourceGroupDeployment `
     -Name 'test-deployment' `
     -TemplateFile 'Deployment/azuredeploy.json' `
     -ResourceGroupName $settingsJson.ResourceGroupName `
@@ -42,7 +42,45 @@ New-AzResourceGroupDeployment `
 Write-Host 'Publishing...'
 .\Deployment\Publish.ps1 -ResourceGroup $settingsJson.ResourceGroupName
 
-if ($settingsJson.AzureAlarmHandlerUrl) {
+$statusCheckUrl = .\Deployment\Get-FunctionUri.ps1 `
+    -FunctionName 'StatusCheck' `
+    -ResourceGroup $settingsJson.ResourceGroupName
+
+$testConfig = @{
+    "name"                = "Status Check"
+    "url"                 = $statusCheckUrl 
+    "expected"            = 200
+    "frequency_secs"      = 900
+    "timeout_secs"        = 30
+    "failedLocationCount" = 1
+    "description"         = "Checking that status returns 200"
+    "locations"           = @(
+        @{
+            "Id" = "emea-nl-ams-azr"
+        },
+        @{
+            "Id" = "emea-gb-db3-azr"
+        },
+        @{
+            "Id" = "emea-fr-pra-edge"
+        },
+        @{
+            "Id" = "emea-se-sto-edge"
+        },
+        @{
+            "Id" = "emea-ru-msa-edge"
+        }
+    ) 
+}
+
+New-AzResourceGroupDeployment `
+    -Name 'test-deployment' `
+    -TemplateFile 'Deployment/availability-test.json' `
+    -ResourceGroupName $settingsJson.ResourceGroupName `
+    -appInsightsResource $output.Outputs["application-insights-reference"].value `
+    -tests $testConfig
+
+if (![string]::IsNullOrEmpty($settingsJson.AzureAlarmHandlerUrl)) {
     Write-Host 'Creating action group'
     .\Deployment\Set-ActionGroup.ps1 `
         -AlertUrl $settingsJson.AzureAlarmHandlerUrl `
