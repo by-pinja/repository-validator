@@ -122,7 +122,7 @@ podTemplate(label: pod.label,
                         }
                         stage('Add availability test') {
                             sh """
-                                pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $resourceGroup"
+                                pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $resourceGroup -WebAppName $appName"
                             """
                         }
                         stage('Warmup and validate'){

@@ -3,7 +3,8 @@
     Adds availability test
 #>
 param(
-    [Parameter(Mandatory)][string]$ResourceGroupName
+    [Parameter(Mandatory)][string]$ResourceGroupName,
+    [Parameter()][string]$WebAppName = $ResourceGroupName
 )
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
@@ -11,7 +12,8 @@ Set-StrictMode -Version Latest
 $applicationInsightsId = (Get-AzResource -ResourceGroupName $ResourceGroupName -ResourceType Microsoft.Insights/components).ResourceId
 $statusCheckUrl = .\Deployment\Get-FunctionUri.ps1 `
     -FunctionName 'StatusCheck' `
-    -ResourceGroup $ResourceGroupName
+    -ResourceGroup $ResourceGroupName `
+    -WebAppName $WebAppName
 
 $testConfig = @{
     "name"                = "Status Check"
