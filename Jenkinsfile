@@ -42,7 +42,7 @@ podTemplate(label: pod.label,
                 """
             }
         }
-        if (isTest(branch) || isMaster(branch) || isDependabot(branch)){
+        if (isTest(branch) || isMaster(branch) || isDependabot(branch) || true){
             container('powershell') {
                 stage('Package') {
                     sh """
@@ -50,7 +50,7 @@ podTemplate(label: pod.label,
                     """
                 }
 
-                if (isTest(branch) || isDependabot(branch)){
+                if (isTest(branch) || isDependabot(branch) || true){
                     toAzureTestEnv {
                         def now = new Date().getTime()
                         def ciRg = 'repo-ci-' + now
@@ -74,6 +74,11 @@ podTemplate(label: pod.label,
                             stage('Publish to test environment') {
                                 sh """
                                     pwsh -command "Publish-AzWebApp -ResourceGroupName $ciRg -Name $ciAppName -ArchivePath $zipName -Force"
+                                """
+                            }
+                            stage('Add availability test') {
+                                sh """
+                                    pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $ciRg"
                                 """
                             }
                             stage('Create .runsettings-file acceptance tests') {
