@@ -42,7 +42,7 @@ podTemplate(label: pod.label,
                 """
             }
         }
-        if (isTest(branch) || isMaster(branch) || isDependabot(branch) || true){
+        if (isTest(branch) || isMaster(branch) || isDependabot(branch)){
             container('powershell') {
                 stage('Package') {
                     sh """
@@ -50,7 +50,7 @@ podTemplate(label: pod.label,
                     """
                 }
 
-                if (isTest(branch) || isDependabot(branch) || true){
+                if (isTest(branch) || isDependabot(branch)){
                     toAzureTestEnv {
                         def now = new Date().getTime()
                         def ciRg = 'repo-ci-' + now
