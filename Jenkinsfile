@@ -76,6 +76,11 @@ podTemplate(label: pod.label,
                                     pwsh -command "Publish-AzWebApp -ResourceGroupName $ciRg -Name $ciAppName -ArchivePath $zipName -Force"
                                 """
                             }
+                            stage('Add availability test') {
+                                sh """
+                                    pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $ciRg"
+                                """
+                            }
                             stage('Create .runsettings-file acceptance tests') {
                                 sh """
                                     pwsh -command "&./Deployment/Create-RunSettingsFile.ps1 -ResourceGroup $ciRg -WebAppName $ciAppName"
