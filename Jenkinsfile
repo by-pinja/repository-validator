@@ -120,6 +120,11 @@ podTemplate(label: pod.label,
                                 pwsh -command "Publish-AzWebApp -ResourceGroupName $resourceGroup -Name $appName -ArchivePath $zipName -Force"
                             """
                         }
+                        stage('Add availability test') {
+                            sh """
+                                pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $resourceGroup"
+                            """
+                        }
                         stage('Warmup and validate'){
                             sh """
                                 pwsh -command "&./Testing/Test-Validation.ps1 -ResourceGroup $resourceGroup -WebAppName $appName"
