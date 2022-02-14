@@ -62,13 +62,15 @@
     },
     {
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2015-04-01",
+      "apiVersion": "2020-12-01",
       "name": "[variables('hostingPlanName')]",
       "location": "[parameters('location')]",
+      "kind": "linux",
       "properties": {
         "name": "[variables('hostingPlanName')]",
         "computeMode": "Dynamic",
-        "sku": "Dynamic"
+        "sku": "Dynamic",
+        "reserved": true
       },
       "tags": {
         "displayName": "Server for function app",
@@ -78,7 +80,7 @@
     {
       "apiVersion": "2018-02-01",
       "type": "Microsoft.Web/sites",
-      "kind": "functionapp",
+      "kind": "functionapp,linux",
       "name": "[variables('functionAppName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
@@ -92,6 +94,7 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
         "siteConfig": {
+          "linuxFxVersion": "DOTNET|6.0",
           "defaultDocuments": [],
           "phpVersion": "",
           "use32BitWorkerProcess": false,
@@ -110,11 +113,11 @@
             },
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~3"
+              "value": "~4"
             },
             {
-              "name": "WEBSITE_NODE_DEFAULT_VERSION",
-              "value": "6.5.0"
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
