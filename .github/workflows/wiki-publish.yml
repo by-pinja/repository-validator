@@ -11,7 +11,7 @@ jobs:
     name: Publish wiki
     # This job runs on Linux
     runs-on: ubuntu-latest
-    container: ptcos/multi-netcore-sdk:0.0.2
+    container: mcr.microsoft.com/dotnet/sdk:6.0-alpine
     steps:
       - name: Checkout
         uses: actions/checkout@v2
