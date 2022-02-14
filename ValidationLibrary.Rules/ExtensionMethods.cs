@@ -13,7 +13,7 @@ namespace ValidationLibrary.Rules
             var allValidationRules = typeof(ExtensionMethods).Assembly.GetExportedTypes().Where(t => t.GetInterface(nameof(IValidationRule)) != null && !t.IsAbstract);
 
             // Select those rules defined by the configuration and the environment variables which should be disabled.
-            var selectedValidationRules = allValidationRules.Where(r => !string.Equals(config.GetValue<string>($"Rules:{r.Name}"), "disable", StringComparison.InvariantCultureIgnoreCase));
+            var selectedValidationRules = allValidationRules.Where(r => !string.Equals(config[$"Rules:{r.Name}"], "disable", StringComparison.InvariantCultureIgnoreCase));
 
             // Add each rule as available for the dependency injection.
             foreach (var rule in selectedValidationRules)

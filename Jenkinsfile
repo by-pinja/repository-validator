@@ -6,8 +6,8 @@ def isTest(branchName) { return branchName == "test" || branchName == "feature/b
 
 podTemplate(label: pod.label,
   containers: pod.templates + [
-    containerTemplate(name: 'dotnet', image: 'ptcos/multi-netcore-sdk:0.0.2', ttyEnabled: true, command: '/bin/sh -c', args: 'cat'),
-    containerTemplate(name: 'powershell', image: 'eu.gcr.io/ptcs-docker-registry/azure-powershell-bicep:latest-main', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
+    containerTemplate(name: 'dotnet', image: 'mcr.microsoft.com/dotnet/sdk:6.0-alpine', ttyEnabled: true, command: '/bin/sh -c', args: 'cat'),
+    containerTemplate(name: 'powershell', image: 'mcr.microsoft.com/azure-powershell:alpine-3.14', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
   ]
 ) {
 
@@ -82,6 +82,11 @@ podTemplate(label: pod.label,
                                     pwsh -command "Publish-AzWebApp -ResourceGroupName $ciRg -Name $ciAppName -ArchivePath $zipName -Force"
                                 """
                             }
+                            stage('Add availability test') {
+                                sh """
+                                    pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $ciRg"
+                                """
+                            }
                             stage('Create .runsettings-file acceptance tests') {
                                 sh """
                                     pwsh -command "&./Deployment/Create-RunSettingsFile.ps1 -ResourceGroup $ciRg -WebAppName $ciAppName"
@@ -119,7 +124,11 @@ podTemplate(label: pod.label,
                         stage('Publish to production environment') {
                             sh """
                                 pwsh -command "Publish-AzWebApp -ResourceGroupName $resourceGroup -Name $appName -ArchivePath $zipName -Force"
-                                pwsh -command "&./Deployment/Configure-Alarms.ps1 -MonitoredWebAppResourceGroup $resourceGroup -MonitoredWebAppName $appName -AlertHandlingResourceGroup 'protacon-slack-alarm-service' -AlertSlackChannel 'hjni-testi'"
+                            """
+                        }
+                        stage('Add availability test') {
+                            sh """
+                                pwsh -command "&./Deployment/Add-AvailabilityTest.ps1 -ResourceGroupName $resourceGroup -WebAppName $appName"
                             """
                         }
                         stage('Warmup and validate'){

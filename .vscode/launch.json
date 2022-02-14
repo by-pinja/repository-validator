@@ -5,12 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET Core Launch (console)",
+      "name": ".NET 6.0 Launch (console)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/Runner/bin/Debug/netcoreapp3.1/Runner.dll",
+      "program": "${workspaceFolder}/Runner/bin/Debug/net6.0/Runner.dll",
       "args": [
         "scan-selected",
         "-r",

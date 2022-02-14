@@ -79,22 +79,22 @@ resource functionAppName 'Microsoft.Web/sites@2018-02-01' = {
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~3'
+          value: '~4'
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: reference(applicationInsightsName.id, '2015-05-01').InstrumentationKey
         }
         {
-          name: 'GitHub:Token'
+          name: 'GitHub__Token'
           value: gitHubToken
         }
         {
-          name: 'GitHub:Organization'
+          name: 'GitHub__Organization'
           value: gitHubOrganization
         }
         {
-          name: 'Rules:HasCodeownersRule'
+          name: 'Rules__HasCodeownersRule'
           value: 'disable'
         }
       ]

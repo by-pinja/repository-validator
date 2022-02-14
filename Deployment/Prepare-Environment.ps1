@@ -44,7 +44,9 @@ New-AzResourceGroupDeployment `
 Write-Host 'Publishing...'
 .\Deployment\Publish.ps1 -ResourceGroup $settingsJson.ResourceGroupName
 
-if ($settingsJson.AzureAlarmHandlerUrl) {
+.\Deployment\Add-AvailabilityTest.ps1 -ResourceGroupName $settingsJson.ResourceGroupName
+
+if (![string]::IsNullOrEmpty($settingsJson.AzureAlarmHandlerUrl)) {
     Write-Host 'Creating action group'
     .\Deployment\Set-ActionGroup.ps1 `
         -AlertUrl $settingsJson.AzureAlarmHandlerUrl `

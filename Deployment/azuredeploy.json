@@ -23,7 +23,7 @@
       }
     },
     "gitHubToken": {
-      "type": "secureString",
+      "type": "securestring",
       "metadata": {
         "description": "GitHub token that is used to access repositories"
       }
@@ -45,19 +45,18 @@
       ]
     }
   },
-  "functions": [],
   "variables": {
-    "functionAppName_var": "[parameters('appName')]",
-    "hostingPlanName_var": "[parameters('appName')]",
-    "applicationInsightsName_var": "[parameters('appName')]",
-    "storageAccountName_var": "[format('{0}func', replace(parameters('appName'), '-', ''))]",
-    "storageAccountid": "[format('{0}/providers/Microsoft.Storage/storageAccounts/{1}', resourceGroup().id, variables('storageAccountName_var'))]"
+    "functionAppName": "[parameters('appName')]",
+    "hostingPlanName": "[parameters('appName')]",
+    "applicationInsightsName": "[parameters('appName')]",
+    "storageAccountName": "[concat(replace(parameters('appName'), '-', ''), 'func')]",
+    "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
       "apiVersion": "2018-07-01",
-      "name": "[variables('storageAccountName_var')]",
       "location": "[parameters('location')]",
       "kind": "Storage",
       "sku": {
@@ -70,12 +69,15 @@
     },
     {
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2021-01-01",
-      "name": "[variables('hostingPlanName_var')]",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('hostingPlanName')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Y1",
-        "tier": "Dynamic"
+        "capacity": 1
+      },
+      "properties": {
+        "name": "[variables('hostingPlanName')]"
       },
       "tags": {
         "displayName": "Server for function app",
@@ -83,17 +85,21 @@
       }
     },
     {
-      "type": "Microsoft.Web/sites",
       "apiVersion": "2018-02-01",
-      "name": "[variables('functionAppName_var')]",
+      "type": "Microsoft.Web/sites",
       "kind": "functionapp",
+      "name": "[variables('functionAppName')]",
       "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
       "tags": {
         "displayName": "Function app",
         "environment": "[parameters('environment')]"
       },
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName_var'))]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
         "siteConfig": {
           "defaultDocuments": [],
           "phpVersion": "",
@@ -101,60 +107,66 @@
           "appSettings": [
             {
               "name": "AzureWebJobsStorage",
-              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageAccountName_var'), listKeys(variables('storageAccountid'), '2015-05-01-preview').key1)]"
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
             },
             {
               "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageAccountName_var'), listKeys(variables('storageAccountid'), '2015-05-01-preview').key1)]"
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
             },
             {
               "name": "WEBSITE_CONTENTSHARE",
-              "value": "[toLower(variables('functionAppName_var'))]"
+              "value": "[toLower(variables('functionAppName'))]"
             },
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~3"
+              "value": "~4"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName_var')), '2015-05-01').InstrumentationKey]"
+              "value": "[reference(resourceId('microsoft.insights/components/', variables('applicationInsightsName')), '2015-05-01').InstrumentationKey]"
             },
             {
-              "name": "GitHub:Token",
+              "name": "GitHub__Token",
               "value": "[parameters('gitHubToken')]"
             },
             {
-              "name": "GitHub:Organization",
+              "name": "GitHub__Organization",
               "value": "[parameters('gitHubOrganization')]"
             },
             {
-              "name": "Rules:HasCodeownersRule",
+              "name": "Rules__HasCodeownersRule",
               "value": "disable"
             }
           ]
         }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName_var'))]",
-        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName_var'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]"
-      ]
+      }
     },
     {
+      "comments": "Application insights",
+      "apiVersion": "2015-05-01",
+      "name": "[variables('applicationInsightsName')]",
       "type": "Microsoft.Insights/components",
-      "apiVersion": "2020-02-02-preview",
-      "name": "[variables('applicationInsightsName_var')]",
       "location": "[parameters('location')]",
-      "kind": "web",
       "tags": {
-        "[format('hidden-link:{0}/providers/Microsoft.Web/sites/{1}', resourceGroup().id, variables('applicationInsightsName_var'))]": "Resource",
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('applicationInsightsName'))]": "Resource",
         "displayName": "Application insights",
         "environment": "[parameters('environment')]"
       },
       "properties": {
-        "Request_Source": "rest",
+        "ApplicationId": "[variables('applicationInsightsName')]",
+        "Request_Source": "IbizaWebAppExtensionCreate",
         "Application_Type": "web"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "application-insights-reference": {
+      "value": "[resourceId('Microsoft.Insights/components', resourceGroup().name)]",
+      "type": "string"
+    }
+  }
 }
