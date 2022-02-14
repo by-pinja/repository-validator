@@ -66,10 +66,12 @@
       "name": "[variables('hostingPlanName')]",
       "location": "[parameters('location')]",
       "kind": "linux",
+      "sku": {
+        "name": "Y1",
+        "capacity": 1
+      },
       "properties": {
         "name": "[variables('hostingPlanName')]",
-        "computeMode": "Dynamic",
-        "sku": "Dynamic",
         "reserved": true
       },
       "tags": {
