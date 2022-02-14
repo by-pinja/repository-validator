@@ -64,10 +64,10 @@ namespace AcceptanceTests
             Assert.AreEqual(HttpStatusCode.Accepted, result.StatusCode);
         }
 
-        private async Task<IRestResponse> SendRequest(object obj)
+        private async Task<RestResponse> SendRequest(object obj)
         {
             var client = new RestClient();
-            var request = new RestRequest(_url, Method.POST);
+            var request = new RestRequest(_url, Method.Post);
             request.AddQueryParameter("code", _code);
             request.AddJsonBody(obj);
 
