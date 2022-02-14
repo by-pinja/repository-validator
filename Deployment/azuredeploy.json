@@ -65,14 +65,12 @@
       "apiVersion": "2020-12-01",
       "name": "[variables('hostingPlanName')]",
       "location": "[parameters('location')]",
-      "kind": "linux",
       "sku": {
         "name": "Y1",
         "capacity": 1
       },
       "properties": {
         "name": "[variables('hostingPlanName')]",
-        "reserved": true
       },
       "tags": {
         "displayName": "Server for function app",
