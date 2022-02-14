@@ -70,7 +70,7 @@
         "capacity": 1
       },
       "properties": {
-        "name": "[variables('hostingPlanName')]",
+        "name": "[variables('hostingPlanName')]"
       },
       "tags": {
         "displayName": "Server for function app",
