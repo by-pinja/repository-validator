@@ -94,7 +94,6 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
         "siteConfig": {
-          "linuxFxVersion": "DOTNET|6.0",
           "defaultDocuments": [],
           "phpVersion": "",
           "use32BitWorkerProcess": false,
