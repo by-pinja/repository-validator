@@ -44,12 +44,6 @@ podTemplate(label: pod.label,
         }
         if (isTest(branch) || isMaster(branch) || isDependabot(branch)){
             container('powershell') {
-                stage('Bicep') {
-                    sh """
-                        pwsh -command "bicep"
-                    """
-                }
-
                 stage('Package') {
                     sh """
                         pwsh -command "Compress-Archive -DestinationPath $zipName -Path $functionsProject/$publishFolder/*"
