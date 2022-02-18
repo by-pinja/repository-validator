@@ -36,10 +36,12 @@ New-AzResourceGroupDeployment `
     -Name 'test-deployment' `
     -TemplateFile 'Deployment/azuredeploy.bicep' `
     -ResourceGroupName $settingsJson.ResourceGroupName `
-    -appName $settingsJson.ResourceGroupName `
-    -gitHubToken $token `
-    -gitHubOrganization $settingsJson.GitHubOrganization `
-    -environment "Development"
+    -TemplateParameterObject @{
+        appName = $settingsJson.ResourceGroupName
+        gitHubToken = $settingsJson.GitHubToken
+        gitHubOrganization = $settingsJson.GitHubOrganization
+        environment = "Development"
+    }
 
 Write-Host 'Publishing...'
 .\Deployment\Publish.ps1 -ResourceGroup $settingsJson.ResourceGroupName
