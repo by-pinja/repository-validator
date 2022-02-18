@@ -98,7 +98,7 @@ podTemplate(label: pod.label,
                         finally {
                             stage('Delete test environment'){
                                 sh """
-                                    
+                                    pwsh -command "Remove-AzResourceGroup -Name '$ciRg' -Force"
                                 """
                             }
                         }
