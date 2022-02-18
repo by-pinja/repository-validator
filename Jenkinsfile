@@ -66,7 +66,7 @@ podTemplate(label: pod.label,
                         ]) {
                             stage('Create test environment'){
                                 sh """
-                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.bicep -ResourceGroupName $ciRg -TemplateParameterObject @{ appName = \'$ciAppName\'; gitHubToken = \'$GH_TOKEN\'; gitHubOrganization = \'$gitHubOrganization\'; environment = \'$environment\' }"
+                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.bicep -ResourceGroupName $ciRg -TemplateParameterObject @{ appName = \"$ciAppName\"; gitHubToken = \"$GH_TOKEN\"; gitHubOrganization = \"$gitHubOrganization\"; environment = \"$environment\" }"
                                 """
                             }
                         }
