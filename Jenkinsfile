@@ -1,4 +1,4 @@
-library 'jenkins-ptcs-library@3.1.0'
+library 'jenkins-ptcs-library@4.0.3'
 
 def isDependabot(branchName) { return branchName.toString().startsWith("dependabot/nuget") }
 def isMaster(branchName) { return branchName == "master" }
@@ -66,7 +66,7 @@ podTemplate(label: pod.label,
                         ]) {
                             stage('Create test environment'){
                                 sh """
-                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.json -ResourceGroupName $ciRg -appName $ciAppName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment $environment"
+                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.bicep -ResourceGroupName $ciRg -appName $ciAppName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment $environment"
                                 """
                             }
                         }
