@@ -14,4 +14,5 @@ $parameters = @{
     environment        = $Environment
 }
 
-New-AzResourceGroupDeployment -Name 'github-validator' -TemplateFile 'Deployment/azuredeploy.bicep' -ResourceGroupName $ResourceGroup -TemplateParameterObject $parameters -Verbose
+bicep build 'Deployment/azuredeploy.bicep'
+New-AzResourceGroupDeployment -Name 'github-validator' -TemplateFile 'Deployment/azuredeploy.json' -ResourceGroupName $ResourceGroup -TemplateParameterObject $parameters -Verbose
