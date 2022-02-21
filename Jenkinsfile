@@ -111,7 +111,7 @@ podTemplate(label: pod.label,
                         ]){
                             stage('Create production environment') {
                                 sh """
-                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.bicep -ResourceGroupName $resourceGroup -appName $appName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment Development"
+                                    pwsh -command "&./Deployment/Create-Environment.ps1 -ResourceGroup $resourceGroup -AppName $appName -GitHubToken $GH_TOKEN -GitHubOrganization $gitHubOrganization -Environment Production"
                                 """
                             }
                         }

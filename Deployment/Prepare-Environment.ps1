@@ -31,17 +31,16 @@ New-AzResourceGroup -Name $settingsJson.ResourceGroupName -Location $settingsJso
 
 Write-Host 'Creating environment...'
 
-$token = (ConvertTo-SecureString -String $settingsJson.GitHubToken -AsPlainText -Force) 
 New-AzResourceGroupDeployment `
     -Name 'test-deployment' `
     -TemplateFile 'Deployment/azuredeploy.bicep' `
     -ResourceGroupName $settingsJson.ResourceGroupName `
     -TemplateParameterObject @{
-        appName = $settingsJson.ResourceGroupName
-        gitHubToken = $settingsJson.GitHubToken
-        gitHubOrganization = $settingsJson.GitHubOrganization
-        environment = "Development"
-    }
+    appName            = $settingsJson.ResourceGroupName
+    gitHubToken        = $settingsJson.GitHubToken
+    gitHubOrganization = $settingsJson.GitHubOrganization
+    environment        = "Development"
+}
 
 Write-Host 'Publishing...'
 .\Deployment\Publish.ps1 -ResourceGroup $settingsJson.ResourceGroupName
