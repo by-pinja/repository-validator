@@ -37,7 +37,7 @@ resource storageAccountName 'Microsoft.Storage/storageAccounts@2018-07-01' = {
   }
 }
 
-resource hostingPlanName 'Microsoft.Web/serverfarms@2021-01-01' = {
+resource hostingPlanName 'Microsoft.Web/serverfarms@2021-01-15' = {
   name: hostingPlanName_var
   location: location
   sku: {
