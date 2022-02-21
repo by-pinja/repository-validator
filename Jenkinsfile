@@ -1,4 +1,4 @@
-library 'jenkins-ptcs-library@4.0.3'
+library 'jenkins-ptcs-library@feature-update-azure-ci-toolbox-version-1'
 
 def isDependabot(branchName) { return branchName.toString().startsWith("dependabot/nuget") }
 def isMaster(branchName) { return branchName == "master" }
