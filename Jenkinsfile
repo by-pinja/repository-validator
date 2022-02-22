@@ -1,13 +1,13 @@
-library 'jenkins-ptcs-library@3.1.0'
+library 'jenkins-ptcs-library@4.1.3'
 
-def isDependabot(branchName) { return branchName.toString().startsWith("feature/buildtest") }
+def isDependabot(branchName) { return branchName.toString().startsWith("dependabot/nuget") }
 def isMaster(branchName) { return branchName == "master" }
-def isTest(branchName) { return branchName == "test" }
+def isTest(branchName) { return branchName == "test" || branchName == "feature/bicep" }
 
 podTemplate(label: pod.label,
   containers: pod.templates + [
     containerTemplate(name: 'dotnet', image: 'mcr.microsoft.com/dotnet/sdk:6.0-alpine', ttyEnabled: true, command: '/bin/sh -c', args: 'cat'),
-    containerTemplate(name: 'powershell', image: 'mcr.microsoft.com/azure-powershell:alpine-3.14', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
+    containerTemplate(name: 'powershell', image: 'mcr.microsoft.com/azure-powershell:7.2.0-alpine-3.14', ttyEnabled: true, command: '/bin/sh -c', args: 'cat')
   ]
 ) {
 
@@ -66,7 +66,7 @@ podTemplate(label: pod.label,
                         ]) {
                             stage('Create test environment'){
                                 sh """
-                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.json -ResourceGroupName $ciRg -appName $ciAppName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment $environment"
+                                    pwsh -command "&./Deployment/Create-Environment.ps1 -ResourceGroup $ciRg -AppName $ciAppName -GitHubToken $GH_TOKEN -GitHubOrganization $gitHubOrganization -Environment $environment"
                                 """
                             }
                         }
@@ -111,7 +111,7 @@ podTemplate(label: pod.label,
                         ]){
                             stage('Create production environment') {
                                 sh """
-                                    pwsh -command "New-AzResourceGroupDeployment -Name github-validator -TemplateFile Deployment/azuredeploy.json -ResourceGroupName $resourceGroup -appName $appName -gitHubToken (ConvertTo-SecureString -String $GH_TOKEN -AsPlainText -Force) -gitHubOrganization $gitHubOrganization -environment Development"
+                                    pwsh -command "&./Deployment/Create-Environment.ps1 -ResourceGroup $resourceGroup -AppName $appName -GitHubToken $GH_TOKEN -GitHubOrganization $gitHubOrganization -Environment Production"
                                 """
                             }
                         }
