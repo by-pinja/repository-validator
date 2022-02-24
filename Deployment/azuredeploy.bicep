@@ -83,7 +83,7 @@ resource functionAppName 'Microsoft.Web/sites@2018-02-01' = {
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: reference(applicationInsightsName.id, '2015-05-01').InstrumentationKey
+          value: reference(applicationInsights.id, '2015-05-01').InstrumentationKey
         }
         {
           name: 'GitHub__Token'
@@ -105,7 +105,18 @@ resource functionAppName 'Microsoft.Web/sites@2018-02-01' = {
   ]
 }
 
-resource applicationInsightsName 'Microsoft.Insights/components@2020-02-02-preview' = {
+resource workspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+  name: resourceGroup().name
+  location: location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+  }
+}
+
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: applicationInsightsName_var
   location: location
   kind: 'web'
@@ -115,7 +126,7 @@ resource applicationInsightsName 'Microsoft.Insights/components@2020-02-02-previ
     environment: environment
   }
   properties: {
-    Request_Source: 'rest'
     Application_Type: 'web'
+    WorkspaceResourceId: workspace.id
   }
 }
